@@ -3,20 +3,13 @@ from flask_restful import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 
+
 app = Flask(__name__)
 api = Api(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
-
-# @app.route('/posts', methods = ['POST', 'GET'])
-# def home():
-#	if request.method = 'POST':s
-#		return {'data': 'Post request'}
-#	if request.method = 'GET':
-#		return {'data': 'Get request'}
-#	return {'data': 'Hello world'}
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
