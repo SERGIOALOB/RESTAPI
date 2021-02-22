@@ -5,7 +5,7 @@ import json
 def test_Get():
     url = "http://localhost:5000/post/5"
 
-    payload = {'id': '5', 'name': 'Clau', 'surname': 'Bertol', 'lastname': 'Laguna'}
+    payload = {'name': 'Clau', 'surname': 'Bertol', 'lastname': 'Laguna'}
 
     headers = {'Content-Type': 'application/json'}
 
@@ -13,4 +13,6 @@ def test_Get():
 
     resp_body = resp.json()
     assert resp_body['name'] == payload['name']
+    assert resp_body['surname'] == payload['surname']
+    assert resp_body['lastname'] == payload['lastname']
     print(resp.text)
