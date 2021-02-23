@@ -1,11 +1,10 @@
 FROM python:3.9
 
 
-COPY . /env
-
 WORKDIR /env
 
+COPY . /env
+
 RUN pip install -r ./requirements.txt
-ENTRYPOINT ["python"]
-EXPOSE 5000
-CMD ["main.py"]
+
+ENTRYPOINT FLASK_APP=/env/main.py flask run --host=0.0.0.0
