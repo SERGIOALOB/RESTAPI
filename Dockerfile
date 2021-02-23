@@ -1,18 +1,11 @@
 FROM python:3.9
 
-RUN pip3 install pipenv
 
-ENV DockerApi /usr/src/flaskbookapi
+COPY . /env
 
-WORKDIR DockerApi
+WORKDIR /env
 
-COPY Pipfile .
-COPY Pipfile.lock .
-COPY . .
-
-RUN pipenv install --system --deploy --ignore-pipfile
-RUN pip3 install flask
-RUN pip3 install flask-restful
+RUN pip install -r ./requirements.txt
+ENTRYPOINT ["python"]
 EXPOSE 5000
-
-CMD ["pipenv", "run", "python", "api.py"]
+CMD ["main.py"]
