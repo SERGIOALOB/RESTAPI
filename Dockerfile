@@ -1,10 +1,19 @@
 FROM python:3.9
 
+EXPOSE 5000
 
-WORKDIR /env
+RUN mkdir /app
 
-COPY . /env
+WORKDIR /app
+
+COPY app/requirements.txt /app/requirements.txt
+
+RUN pip install pymysql
 
 RUN pip install -r ./requirements.txt
 
-ENTRYPOINT FLASK_APP=/env/main.py flask run --host=0.0.0.0
+COPY app /app
+
+ENTRYPOINT ["python"]
+
+CMD ["main.py"]
