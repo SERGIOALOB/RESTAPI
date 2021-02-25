@@ -2,18 +2,17 @@ FROM python:3.9
 
 EXPOSE 5000
 
-RUN mkdir /app
+WORKDIR /env
 
-WORKDIR /app
-
-COPY app/requirements.txt /app/requirements.txt
+COPY requirements.txt .
 
 RUN pip install pymysql
 
 RUN pip install -r ./requirements.txt
 
-COPY app /app
+COPY . /env
 
 ENTRYPOINT ["python"]
 
 CMD ["main.py"]
+

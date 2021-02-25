@@ -1,4 +1,5 @@
 import pytest
+import pytest_mock
 
 from main import app as flask_app
 
