@@ -61,3 +61,5 @@ Thumbs.db
 config.codekit
 .sass-cache
 .vscode
+tests/__pycache__/
+tests/.pytest_cache
