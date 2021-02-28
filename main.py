@@ -7,7 +7,7 @@ import requests
 
 app = Flask(__name__)
 api = Api(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root@flask_mysql:3306/db'
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:root@flask_mysql:3306/db"
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
@@ -17,7 +17,7 @@ if db is None:
 
 
 class Post(db.Model):
-    __tablename__='Post'
+    __tablename__ = "Post"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
     surname = db.Column(db.String(100))
@@ -33,7 +33,14 @@ def create_tables():
 
 class PostSchema(ma.Schema):
     class Meta:
-        fields = ('id', 'name', 'surname', 'lastname', 'github_name', 'github_following')
+        fields = (
+            "id",
+            "name",
+            "surname",
+            "lastname",
+            "github_name",
+            "github_following",
+        )
         model = Post
 
 
@@ -47,9 +54,13 @@ class PostsResource(Resource):
 
     def post(self):
         data = request.json
-        post = Post(name=data['name'], surname=data['surname'], lastname=data['lastname'],
-                    github_name=data['github_name'],
-                    github_following=data['github_following'])
+        post = Post(
+            name=data["name"],
+            surname=data["surname"],
+            lastname=data["lastname"],
+            github_name=data["github_name"],
+            github_following=data["github_following"],
+        )
         db.session.add(post)
         db.session.commit()
         return post_schema.dump(post)
@@ -63,20 +74,20 @@ class PostResource(Resource):
         data = request.json
         post = Post.query.get_or_404(pk)
 
-        if 'name' in data:
-            post.name = data['name']
+        if "name" in data:
+            post.name = data["name"]
 
-        if 'surname' in data:
-            post.surname = data['surname']
+        if "surname" in data:
+            post.surname = data["surname"]
 
-        if 'lastname' in data:
-            post.lastname = data['lastname']
+        if "lastname" in data:
+            post.lastname = data["lastname"]
 
-        if 'github_name' in data:
-            post.github_name = data['github_name']
+        if "github_name" in data:
+            post.github_name = data["github_name"]
 
-        if 'github_following' in data:
-            post.github_following = data['github_following']
+        if "github_following" in data:
+            post.github_following = data["github_following"]
 
         db.session.commit()
         return post_schema.dump(post)
@@ -85,21 +96,21 @@ class PostResource(Resource):
         post = Post.query.get_or_404(pk)
         db.session.delete(post)
         db.session.commit()
-        return '', 204
+        return "", 204
 
 
 def get_following(github_name):
-    url = 'https://api.github.com/users/' + github_name + '/following'
+    url = "https://api.github.com/users/" + github_name + "/following"
     data = requests.get(url=url).json()
-    resul = Counter(post['login'] for post in data)
+    resul = Counter(post["login"] for post in data)
     entries = 0
     for k, v in resul.items():
         entries += v
     return entries
 
 
-api.add_resource(PostResource, '/post/<int:pk>')
-api.add_resource(PostsResource, '/posts')
+api.add_resource(PostResource, "/post/<int:pk>")
+api.add_resource(PostsResource, "/posts")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
