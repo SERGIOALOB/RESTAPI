@@ -59,7 +59,7 @@ class PostsResource(Resource):
             surname=data["surname"],
             lastname=data["lastname"],
             github_name=data["github_name"],
-            github_following=data["github_following"],
+            github_following=get_following(data["github_name"]),
         )
         db.session.add(post)
         db.session.commit()
@@ -87,7 +87,7 @@ class PostResource(Resource):
             post.github_name = data["github_name"]
 
         if "github_following" in data:
-            post.github_following = data["github_following"]
+            post.github_following = get_following(post.github_name)
 
         db.session.commit()
         return post_schema.dump(post)
@@ -100,7 +100,7 @@ class PostResource(Resource):
 
 
 def get_following(github_name):
-    url = "https://api.github.com/users/" + github_name + "/following"
+    url = f"https://api.github.com/users/{github_name}/following"
     data = requests.get(url=url).json()
     resul = Counter(post["login"] for post in data)
     entries = 0

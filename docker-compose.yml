@@ -9,6 +9,11 @@ services:
       - mysql
     ports:
       - "5000:5000"
+    depends_on:
+      - mysql
+    volumes:
+      - ./tests:/env/tests
+      - .:/env
   mysql:
     container_name: flask_mysql
     image: mysql:5.7    

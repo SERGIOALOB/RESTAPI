@@ -1,8 +1,8 @@
 import pytest
-import pytest_mock
 import json
-
+from unittest import mock
 from main import app as flask_app
+from main import requests
 
 
 @pytest.fixture
