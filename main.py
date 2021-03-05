@@ -1,8 +1,9 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_restful import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from collections import Counter
+from werkzeug import exceptions
 import requests
 
 app = Flask(__name__)
@@ -98,15 +99,29 @@ class PostResource(Resource):
         db.session.commit()
         return "", 204
 
+class MyException(TypeError):
+    status_code=400
+    message= {"Error": "Github Username Not Found"}
+    
+@app.errorhandler(MyException)
+def handle_my_exception(e):
+    return jsonify(e.message), 400
+
+app.register_error_handler(MyException, handle_my_exception)
+    
+
 
 def get_following(github_name):
-    url = f"https://api.github.com/users/{github_name}/following"
-    data = requests.get(url=url).json()
-    resul = Counter(post["login"] for post in data)
-    entries = 0
-    for k, v in resul.items():
-        entries += v
-    return entries
+    try:
+        url = f"https://api.github.com/users/{github_name}/following"
+        data = requests.get(url=url).json()
+        resul = Counter(post["login"] for post in data)
+        entries = 0
+        for k, v in resul.items():
+            entries += v
+        return entries
+    except(exceptions.BadRequest, KeyError, TypeError) as e:
+        raise MyException
 
 
 api.add_resource(PostResource, "/post/<int:pk>")
