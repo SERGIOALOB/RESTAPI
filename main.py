@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from collections import Counter
 from werkzeug import exceptions
+from flask_swagger_ui import get_swaggerui_blueprint
 import requests
 
 app = Flask(__name__)
@@ -16,6 +17,22 @@ if db is None:
     db.create_all()
     db.session.commit()
 
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static', path)
+    
+### swagger specific ###
+SWAGGER_URL = '/swagger'
+API_URL = '/static/swagger.json'
+SWAGGERUI_BLUEPRINT = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={
+        'flask_app': "My Rest Api"
+    }
+)
+app.register_blueprint(SWAGGERUI_BLUEPRINT, url_prefix=SWAGGER_URL)
+### end swagger specific ###
 
 class Post(db.Model):
     __tablename__ = "Post"
