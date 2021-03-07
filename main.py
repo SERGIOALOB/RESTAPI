@@ -140,7 +140,6 @@ def get_following(github_name):
         url = f"https://api.github.com/users/{github_name}/following"
         response = requests.get(url=url)
         response.raise_for_status()
-        print(response)
         following = [following_item['login'] for following_item in response.json() if 'login' in following_item]
         return len(following)
     except(HTTPError, KeyError, TypeError) as e:
