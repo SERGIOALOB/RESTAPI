@@ -1,12 +1,26 @@
-from flask import Flask, request, jsonify
-from flask_restful import Api, Resource
-from flask_sqlalchemy import SQLAlchemy
-from flask_marshmallow import Marshmallow
-from collections import Counter
-from werkzeug import exceptions
+import logging
+
 import requests
+from flask import Flask, jsonify, request
+from flask_marshmallow import Marshmallow
+from flask_restful import Api as _Api, Resource, HTTPException
+from flask_sqlalchemy import SQLAlchemy
+from requests.exceptions import HTTPError
 
 app = Flask(__name__)
+
+class Api(_Api):
+    def error_router(self, original_handler, e):
+        # Override original error_router to only handle HTTPExceptions.
+        if self._has_fr_route() and isinstance(e, HTTPException):
+            try:
+                # Use Flask-RESTful's error handling method
+                return self.handle_error(e) 
+            except Exception:
+                # Fall through to original handler (i.e. Flask)
+                pass
+        return original_handler(e)
+
 api = Api(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:root@flask_mysql:3306/db"
 db = SQLAlchemy(app)
@@ -99,29 +113,38 @@ class PostResource(Resource):
         db.session.commit()
         return "", 204
 
-class MyException(TypeError):
-    status_code=400
-    message= {"Error": "Github Username Not Found"}
-    
-@app.errorhandler(MyException)
-def handle_my_exception(e):
-    return jsonify(e.message), 400
+class APIException(Exception):
+    status_code = 400
 
-app.register_error_handler(MyException, handle_my_exception)
+    def __init__(self, message, status_code=None, payload=None):
+        Exception.__init__(self)
+        self.message = message
+        if status_code is not None:
+            self.status_code = status_code
+        self.payload = payload
+
+    def to_dict(self):
+        rv = dict(self.payload or ())
+        rv['message'] = self.message
+        return rv
     
+@app.errorhandler(APIException)
+def handle_my_exception(error):
+    response = jsonify(error.to_dict())
+    response.status_code = error.status_code
+    return response   
 
 
 def get_following(github_name):
     try:
         url = f"https://api.github.com/users/{github_name}/following"
-        data = requests.get(url=url).json()
-        resul = Counter(post["login"] for post in data)
-        entries = 0
-        for k, v in resul.items():
-            entries += v
-        return entries
-    except(exceptions.BadRequest, KeyError, TypeError) as e:
-        raise MyException
+        response = requests.get(url=url)
+        response.raise_for_status()
+        following = [following_item['login'] for following_item in response.json() if 'login' in following_item]
+        return len(following)
+    except(HTTPError, KeyError, TypeError) as e:
+        logging.warning(f'User not found {response.json()}')
+        raise APIException('Github user not found', status_code=400)
 
 
 api.add_resource(PostResource, "/post/<int:pk>")
